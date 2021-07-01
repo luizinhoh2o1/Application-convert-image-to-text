@@ -18,9 +18,12 @@ namespace Converter
         Image image;
         Bitmap bitmap;
 
-        String whiteColorTxt;
-        String blackColorTxt;
-        String txtConvertTxtImage;
+        const int heightImg = 50;
+        const int widthImg = 50;
+
+        int[,] binaryImage = new int[widthImg, heightImg];
+
+        String txtBinaryImg;
 
         public Form1()
         {
@@ -30,14 +33,12 @@ namespace Converter
         private void Form1_Load(object sender, EventArgs e)
         {
             btnConvertImage.Enabled = false;
-
-            //carrega caracteres padrão para montar a imagem de texto
-            whiteColorTxt = txtBoxWhiteColor.Text;
-            blackColorTxt = txtBoxBlackColor.Text;
         }
 
         private void btnCarregarImagem_Click(object sender, EventArgs e)
         {
+            txtBinaryImg = "";
+
             ImportImage();
             btnConvertImage.Enabled = true;
         }
@@ -49,123 +50,58 @@ namespace Converter
 
         private void btnView_Click(object sender, EventArgs e)
         {
-            txtBoxView.Text = txtConvertTxtImage;
-        }
-
-        private void btnApply_Click(object sender, EventArgs e)
-        {
-            whiteColorTxt = txtBoxWhiteColor.Text;
-            blackColorTxt = txtBoxBlackColor.Text;
-
-            RefreshImageTxt();
-        }
-
-        private void RefreshImageTxt() //atualiza imagem de texto
-        {
-            txtConvertTxtImage = "";
-            FormatToText();
+            txtBoxView.Text = txtBinaryImg;
         }
 
         private void ImportImage()
         {
             OpenFileDialog ofd1 = new OpenFileDialog();
+            DialogResult re = ofd1.ShowDialog();
 
-            ofd1.Title = "Open png";
             ofd1.Filter = "Image PNG | *.png";
             ofd1.RestoreDirectory = true;
 
-            if (ofd1.ShowDialog() == DialogResult.OK)
+            if (re == DialogResult.OK)
             {
-
                 image = Image.FromFile(ofd1.FileName);
                 bitmap = (Bitmap)image;
-                picImage.Image = bitmap;
+                picImagem.Image = bitmap;
 
-                RefreshImageTxt();
+                GetPixelsImage();
+
+                FormatToText();
             }
         }
 
         private void SaveFileTxt()
         {
             SaveFileDialog sfd1 = new SaveFileDialog();
-            sfd1.Title = "Save file";
+            StreamWriter writer = new StreamWriter("img.txt");
+
             sfd1.Filter = "Text files | *.txt";
             sfd1.RestoreDirectory = true;
 
             if (sfd1.ShowDialog() == DialogResult.OK)
             {
-                StreamWriter writer = new StreamWriter(File.Create(sfd1.FileName));
-
-                writer.Write(txtConvertTxtImage); //grava o texto em um arquivo
-                writer.Dispose();
-                MessageBox.Show("File saved successfully!", "Sucess", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                OpenFileTxt(sfd1.FileName);
+                writer.Write(txtBinaryImg);
+                writer.Close();
             }
         }
 
         private void FormatToText()
         {
-            for (int colunm = 0; colunm < image.Height; colunm++)
-            {
-                for (int row = 0; row < image.Width; row++)
-                {
-                    //adiciona o numero/caractere na linha representando a cor
-                    txtConvertTxtImage = String.Format(txtConvertTxtImage + GetPixelImage(row, colunm));
-                }
-                //pula para proxima linha
-                txtConvertTxtImage = String.Format(txtConvertTxtImage + "\n");
-            }
-        }
-
-        private String GetPixelImage(int rowP, int colunmP)
-        {
-            //armazenar cor
-            Color pixelColor;
-            String returnTxtColor;
-
-            //pega o codigo da cor do pixel
-            pixelColor = bitmap.GetPixel(rowP, colunmP);
-
-            if (pixelColor.ToArgb() == -16777216) //valor representa o preto
-            {
-                 //cor preta retorna
-                returnTxtColor = blackColorTxt;
-            }
-            else
-            {
-                //cor branca retorna
-                returnTxtColor = whiteColorTxt;
-            }
-
-            return returnTxtColor;
-        }
-
-        private void OpenFileTxt(String fileName)
-        {
-            System.Diagnostics.Process.Start("notepad", fileName);
-        }
-    }
-}
-
-
-/*  
-    private void FormatToText()
-        {
             for (int colunm = 0; colunm < heightImg; colunm++)
             {
+                txtBinaryImg = String.Format(txtBinaryImg + "\n");
+
                 for (int row = 0; row < widthImg; row++)
                 {
-                    //adiciona o numero/caractere na linha representando a cor
-                    txtConvertTxtImage = String.Format(txtConvertTxtImage + convertTxtImage[row, colunm]);
+                    txtBinaryImg = String.Format(txtBinaryImg + binaryImage[row, colunm]);
                 }
-                //pula para proxima linha
-                txtConvertTxtImage = String.Format(txtConvertTxtImage + "\n");
             }
         }
 
-
-
-    private void GetPixelsImage()
+        private void GetPixelsImage()
         {
             //armazenar cor
             Color pixelColor;
@@ -181,14 +117,16 @@ namespace Converter
                     if (pixelColor.ToArgb() == -16777216) //valor representa o preto
                     {
                         //cor preta registrada como 1
-                        convertTxtImage[row, column] = blackColorTxt;
+                        binaryImage[row, column] = 1;
                     }
                     else
                     {
                         //cor branca registrada como 0
-                        convertTxtImage[row, column] = whiteColorTxt;
+                        binaryImage[row, column] = 0;
                     }
                 }
             }
         }
-*/
+
+    }
+}
