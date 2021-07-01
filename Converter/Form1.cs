@@ -18,12 +18,9 @@ namespace Converter
         Image image;
         Bitmap bitmap;
 
-        const int heightImg = 50;
-        const int widthImg = 50;
-
-        int[,] binaryImage = new int[widthImg, heightImg];
-
-        String txtBinaryImg;
+        String whiteColorTxt;
+        String blackColorTxt;
+        String txtConvertTxtImage;
 
         public Form1()
         {
@@ -33,12 +30,14 @@ namespace Converter
         private void Form1_Load(object sender, EventArgs e)
         {
             btnConvertImage.Enabled = false;
+
+            //carrega caracteres padrão para montar a imagem de texto
+            whiteColorTxt = txtBoxWhiteColor.Text;
+            blackColorTxt = txtBoxBlackColor.Text;
         }
 
         private void btnCarregarImagem_Click(object sender, EventArgs e)
         {
-            txtBinaryImg = "";
-
             ImportImage();
             btnConvertImage.Enabled = true;
         }
@@ -50,58 +49,123 @@ namespace Converter
 
         private void btnView_Click(object sender, EventArgs e)
         {
-            txtBoxView.Text = txtBinaryImg;
+            txtBoxView.Text = txtConvertTxtImage;
+        }
+
+        private void btnApply_Click(object sender, EventArgs e)
+        {
+            whiteColorTxt = txtBoxWhiteColor.Text;
+            blackColorTxt = txtBoxBlackColor.Text;
+
+            RefreshImageTxt();
+        }
+
+        private void RefreshImageTxt() //atualiza imagem de texto
+        {
+            txtConvertTxtImage = "";
+            FormatToText();
         }
 
         private void ImportImage()
         {
             OpenFileDialog ofd1 = new OpenFileDialog();
-            DialogResult re = ofd1.ShowDialog();
 
+            ofd1.Title = "Open png";
             ofd1.Filter = "Image PNG | *.png";
             ofd1.RestoreDirectory = true;
 
-            if (re == DialogResult.OK)
+            if (ofd1.ShowDialog() == DialogResult.OK)
             {
+
                 image = Image.FromFile(ofd1.FileName);
                 bitmap = (Bitmap)image;
-                picImagem.Image = bitmap;
+                picImage.Image = bitmap;
 
-                GetPixelsImage();
-
-                FormatToText();
+                RefreshImageTxt();
             }
         }
 
         private void SaveFileTxt()
         {
             SaveFileDialog sfd1 = new SaveFileDialog();
-            StreamWriter writer = new StreamWriter("img.txt");
-
+            sfd1.Title = "Save file";
             sfd1.Filter = "Text files | *.txt";
             sfd1.RestoreDirectory = true;
 
             if (sfd1.ShowDialog() == DialogResult.OK)
             {
-                writer.Write(txtBinaryImg);
-                writer.Close();
+                StreamWriter writer = new StreamWriter(File.Create(sfd1.FileName));
+
+                writer.Write(txtConvertTxtImage); //grava o texto em um arquivo
+                writer.Dispose();
+                MessageBox.Show("File saved successfully!", "Sucess", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                OpenFileTxt(sfd1.FileName);
             }
         }
 
         private void FormatToText()
         {
-            for (int colunm = 0; colunm < heightImg; colunm++)
+            for (int colunm = 0; colunm < image.Height; colunm++)
             {
-                txtBinaryImg = String.Format(txtBinaryImg + "\n");
-
-                for (int row = 0; row < widthImg; row++)
+                for (int row = 0; row < image.Width; row++)
                 {
-                    txtBinaryImg = String.Format(txtBinaryImg + binaryImage[row, colunm]);
+                    //adiciona o numero/caractere na linha representando a cor
+                    txtConvertTxtImage = String.Format(txtConvertTxtImage + GetPixelImage(row, colunm));
                 }
+                //pula para proxima linha
+                txtConvertTxtImage = String.Format(txtConvertTxtImage + "\n");
             }
         }
 
-        private void GetPixelsImage()
+        private String GetPixelImage(int rowP, int colunmP)
+        {
+            //armazenar cor
+            Color pixelColor;
+            String returnTxtColor;
+
+            //pega o codigo da cor do pixel
+            pixelColor = bitmap.GetPixel(rowP, colunmP);
+
+            if (pixelColor.ToArgb() == -16777216) //valor representa o preto
+            {
+                 //cor preta retorna
+                returnTxtColor = blackColorTxt;
+            }
+            else
+            {
+                //cor branca retorna
+                returnTxtColor = whiteColorTxt;
+            }
+
+            return returnTxtColor;
+        }
+
+        private void OpenFileTxt(String fileName)
+        {
+            System.Diagnostics.Process.Start("notepad", fileName);
+        }
+    }
+}
+
+
+/*  
+    private void FormatToText()
+        {
+            for (int colunm = 0; colunm < heightImg; colunm++)
+            {
+                for (int row = 0; row < widthImg; row++)
+                {
+                    //adiciona o numero/caractere na linha representando a cor
+                    txtConvertTxtImage = String.Format(txtConvertTxtImage + convertTxtImage[row, colunm]);
+                }
+                //pula para proxima linha
+                txtConvertTxtImage = String.Format(txtConvertTxtImage + "\n");
+            }
+        }
+
+
+
+    private void GetPixelsImage()
         {
             //armazenar cor
             Color pixelColor;
@@ -117,16 +181,14 @@ namespace Converter
                     if (pixelColor.ToArgb() == -16777216) //valor representa o preto
                     {
                         //cor preta registrada como 1
-                        binaryImage[row, column] = 1;
+                        convertTxtImage[row, column] = blackColorTxt;
                     }
                     else
                     {
                         //cor branca registrada como 0
-                        binaryImage[row, column] = 0;
+                        convertTxtImage[row, column] = whiteColorTxt;
                     }
                 }
             }
         }
-
-    }
-}
+*/
