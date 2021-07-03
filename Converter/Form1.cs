@@ -105,15 +105,24 @@ namespace Converter
 
         private void FormatToText()
         {
+            String rowString = "";
+
             for (int colunm = 0; colunm < image.Height; colunm++)
             {
                 for (int row = 0; row < image.Width; row++)
                 {
-                    //adiciona o numero/caractere na linha representando a cor
-                    txtConvertTxtImage = String.Format(txtConvertTxtImage + GetPixelImage(row, colunm));
+                    //adiciona o numero/caractere na linha representando a cor na rowString
+                    rowString = rowString + GetPixelImage(row, colunm);
+
                 }
+                //adiciona a rowString no texto de imagem.
+                txtConvertTxtImage = txtConvertTxtImage + rowString;
+
+                //zera a rowString para regravar novamente
+                rowString = "";
+
                 //pula para proxima linha
-                txtConvertTxtImage = String.Format(txtConvertTxtImage + "\n");
+                txtConvertTxtImage = txtConvertTxtImage + "\n";
             }
         }
 
